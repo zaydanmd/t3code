@@ -12,6 +12,7 @@ import { contextBridge, ipcRenderer, webFrame, webUtils } from "electron";
 
 import * as IpcChannels from "./ipc/channels.ts";
 import { mergeLegacyLocalStorage } from "./legacyLocalStorageMerge.ts";
+import { OMARCHY_GLASS_ARGUMENT } from "./window/OmarchyGlass.ts";
 
 const SNAP_SHOT_EVENT_TYPES = new Set([
   "requested",
@@ -44,6 +45,7 @@ try {
 
 // oxlint-disable-next-line t3code/no-global-process-runtime -- Electron exposes the client platform in its sandboxed preload process.
 const clientPlatform = process.platform;
+const isOmarchyGlass = clientPlatform === "linux" && process.argv.includes(OMARCHY_GLASS_ARGUMENT);
 
 if (clientPlatform === "darwin") {
   // Native window buttons do not scale with Chromium zoom. Keep their reserved
@@ -84,6 +86,7 @@ contextBridge.exposeInMainWorld("desktopBridge", {
   },
   getPathForFile: (file: File) => webUtils.getPathForFile(file),
   getClientPlatform: () => clientPlatform,
+  isOmarchyGlass,
   setNotificationBadge: (badge) =>
     ipcRenderer.invoke(IpcChannels.SET_NOTIFICATION_BADGE_CHANNEL, badge),
   onNotificationBadgeClear: (listener) => {

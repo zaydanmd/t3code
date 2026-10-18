@@ -1029,6 +1029,7 @@ export interface DesktopBridge {
   getAppBranding: () => DesktopAppBranding | null;
   getPathForFile?: (file: File) => string;
   getClientPlatform?: () => string;
+  readonly isOmarchyGlass?: boolean;
   setNotificationBadge?: (badge: { count: number; image: string | null }) => Promise<void>;
   onNotificationBadgeClear?: (listener: () => void) => () => void;
   onTrackpadScrollEnd?: (listener: () => void) => () => void;

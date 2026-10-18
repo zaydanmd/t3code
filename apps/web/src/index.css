@@ -2367,3 +2367,58 @@ code {
     }
   }
 }
+
+/* Omarchy Glassy mode: the desktop shell makes the window transparent and sets
+   this attribute so the compositor blurs the wallpaper behind the large
+   surfaces. The tint goes on background-color rather than redefining
+   --background/--sidebar, which would be a variable cycle. Unlayered, so it
+   outranks the utilities and the theme blocks above. !important on html/body
+   because the boot script and useTheme write inline backgrounds there. */
+html[data-omarchy-glass],
+html[data-omarchy-glass] body {
+  background-color: transparent !important;
+}
+
+html[data-omarchy-glass] [data-slot="sidebar-inner"] {
+  background-color: color-mix(in srgb, var(--sidebar) var(--omarchy-glass-opacity), transparent);
+}
+
+html[data-omarchy-glass] main[data-slot="sidebar-inset"] {
+  background-color: color-mix(in srgb, var(--background) var(--omarchy-glass-opacity), transparent);
+}
+
+/* The inset already carries the canvas tint. Full-bleed panels and chrome
+   strips inside it paint the same token, which would stack to roughly 88%
+   opacity and look patchy, so they go clear. Rounded or input elements are
+   controls and keep their fill. */
+html[data-omarchy-glass] [data-chat-header],
+html[data-omarchy-glass]
+  main[data-slot="sidebar-inset"]
+  .bg-background:is(.min-h-0, .min-w-0, .min-h-10):not([class*="rounded"], input) {
+  background-color: transparent;
+}
+
+/* The Glass opacity setting (written inline on html by __root) drives the
+   window glass instead. The composer and popovers go opaque below html:
+   backdrop blur does nothing over a transparent window, so their frosting
+   would show chat text through sharply. The html value resolves before the
+   body override, so the window keeps the setting. */
+html[data-omarchy-glass] {
+  --omarchy-glass-opacity: var(--glass-opacity);
+}
+
+html[data-omarchy-glass] body {
+  --glass-opacity: 100%;
+}
+
+/* Default dark code blocks use a translucent bg-input/32 fill, which would
+   show the wallpaper. Paint the same tint over an opaque canvas. color-mix
+   can't do it: --input carries its own alpha, so the mix stays translucent.
+   Themed palettes already use the opaque --code-background above. */
+html.dark[data-omarchy-glass]:not([data-theme-id]) .chat-markdown-codeblock {
+  background-color: var(--background);
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--input) 32%, transparent),
+    color-mix(in srgb, var(--input) 32%, transparent)
+  );
+}
